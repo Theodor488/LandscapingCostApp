@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ClosedXML.Excel;
+
 namespace LandscapingCostApp
 {
     public partial class Form1 : Form
@@ -65,15 +70,27 @@ namespace LandscapingCostApp
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    //Get the path of specified file
                     filePath = openFileDialog.FileName;
 
-                    //Read the contents of the file into a stream
-                    var fileStream = openFileDialog.OpenFile();
-
-                    using (StreamReader reader = new StreamReader(fileStream))
+                    // Read Excel File with ClosedXML
+                    using (var workbook = new XLWorkbook(filePath))
                     {
-                        fileContent = reader.ReadToEnd();
+                        var worksheet = workbook.Worksheet(2); // Read 2nd sheet
+                        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                        string excelData = "Extracted Data:\n";
+                        Dictionary<string, string> taskHours = new Dictionary<string, string>();
+
+                        foreach (var row in rows)
+                        {
+                            string taskHoursKey = $"{row.Cell(1).GetString()}_{row.Cell(3).GetString()}_{row.Cell(7).GetString()}\n";
+                            string tasksHours = row.Cell(9).GetString();
+                            
+                            // Read data from first three columns (adjust based on actual file structure)
+                            excelData += $"{row.Cell(1).GetString()} | {row.Cell(2).GetString()} | {row.Cell(3).GetString()}\n";
+                        }
+
+                        MessageBox.Show(excelData, "Excel Data Preview", MessageBoxButtons.OK);
                     }
                 }
             }
