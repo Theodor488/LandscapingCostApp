@@ -58,9 +58,9 @@
             // 
             buttonSelectFiles.Location = new Point(53, 404);
             buttonSelectFiles.Name = "buttonSelectFiles";
-            buttonSelectFiles.Size = new Size(112, 34);
+            buttonSelectFiles.Size = new Size(217, 34);
             buttonSelectFiles.TabIndex = 10;
-            buttonSelectFiles.Text = "Select Files";
+            buttonSelectFiles.Text = "Combine Daily Logs";
             buttonSelectFiles.UseVisualStyleBackColor = true;
             buttonSelectFiles.Click += buttonSelectFiles_Click;
             // 
@@ -72,6 +72,7 @@
             buttonViewLogs.TabIndex = 11;
             buttonViewLogs.Text = "View Logs";
             buttonViewLogs.UseVisualStyleBackColor = true;
+            buttonViewLogs.Click += buttonViewLogs_Click;
             // 
             // Form1
             // 
