@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using ClosedXML.Excel;
 
@@ -65,47 +66,40 @@ namespace LandscapingCostApp
 
             if (excelFiles.Length > 0)
             {
-                string firstFile = excelFiles[0];
+                //using var workbook = new XLWorkbook();
+                //var worksheet = workbook.AddWorksheet();
+                //worksheet.ColumnWidth = 8;
+                var dataTable = new DataTable();
 
-                using (var workbook = new XLWorkbook(""))
+                for (int i = 0; i < 1; i++)
                 {
-                    var worksheet = workbook.Worksheet(1);
-                    var firstTable = worksheet.Tables.FirstOrDefault();
+                    string currFile = excelFiles[i];
 
-                    // Create new sheet
-                    using var wb = new XLWorkbook();
-                    var ws = wb.AddWorksheet();
-                    ws.ColumnWidth = 8;
-                    ws.FirstCell().InsertTable(new[]
+                    using (var workbook = new XLWorkbook(currFile))
                     {
-                        new DailyLog("ProjectID", firstTable.FirstCell)
-                    }, "PastrySales", true);
+                        var worksheet = workbook.Worksheet(1);
 
-                    ws.Range("D2:D5").CreateTable("Table");
+                        // Column Headers
+                        foreach (var row in worksheet.RangeUsed().Rows().Where(r => r.RowNumber() == 1))
+                        {
+                            List<string> rowData = new List<string>();
+                            
+                            foreach (var column in row.Cells())
+                            {
+                                //rowData.Add(column.GetString());
+                                dataTable.Columns.Add(column.GetString(), typeof(string));
+                            }
 
-                    wb.SaveAs("Showcase.xlsx");
+                            Console.WriteLine();
+                        }
 
-            /*
-            string inputPath = "C:\\Users\\theod\\Documents\\LandscapeProject\\DailyLogs";
-            string outputPath = "C:\\Users\\theod\\Documents\\LandscapeProject";
-
-            FileInfo[] files = new DirectoryInfo(inputPath).GetFiles();
-
-            List<Stream> streams = new List<Stream>();
-
-            foreach (FileInfo file in files)
-            {
-                streams.Add(file.OpenRead());
+                        worksheet = workbook.AddWorksheet();
+                        worksheet.Cell("A1").InsertData(dataTable);
+                        string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
+                        workbook.SaveAs(savePath);
+                    }
+                }
             }
-
-            Stream mergedStream = MergeExcelDocuments(streams);
-
-            // MergedDailyLogs minDate-maxDate. Add logic to enumerate if name is the same
-            FileStream fileStream = new FileStream(outputPath + "MergedDailyLogs.xlsx", FileMode.Create, FileAccess.Write);
-            mergedStream.Position = 0;
-            mergedStream.CopyTo(fileStream);
-            fileStream.Close();
-            */
         }
         
         private void SelectSheetValues()
