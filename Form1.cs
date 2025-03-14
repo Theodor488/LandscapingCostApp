@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace LandscapingCostApp
 {
@@ -64,40 +65,41 @@ namespace LandscapingCostApp
             string inputPath = @"C:\Users\theod\Documents\LandscapeProject\DailyLogs";
             string[] excelFiles = Directory.GetFiles(inputPath, "*.xlsx");
 
-            if (excelFiles.Length > 0)
+            DataTable dataTable = new DataTable();
+            bool headersAdded = false;
+
+            foreach (string file in excelFiles)
             {
-                //using var workbook = new XLWorkbook();
-                //var worksheet = workbook.AddWorksheet();
-                //worksheet.ColumnWidth = 8;
-                var dataTable = new DataTable();
-
-                for (int i = 0; i < 1; i++)
+                using (var workbook = new XLWorkbook(file))
                 {
-                    string currFile = excelFiles[i];
+                    var worksheet = workbook.Worksheet(1);
 
-                    using (var workbook = new XLWorkbook(currFile))
+                    if (!headersAdded)
                     {
-                        var worksheet = workbook.Worksheet(1);
-
-                        // Column Headers
-                        foreach (var row in worksheet.RangeUsed().Rows().Where(r => r.RowNumber() == 1))
+                        foreach (var cell in worksheet.Row(1).Cells())
                         {
-                            List<string> rowData = new List<string>();
-                            
-                            foreach (var column in row.Cells())
-                            {
-                                //rowData.Add(column.GetString());
-                                dataTable.Columns.Add(column.GetString(), typeof(string));
-                            }
+                            dataTable.Columns.Add(cell.GetString(), typeof(string));
+                        }
+                        headersAdded = true;
+                    }
 
-                            Console.WriteLine();
+                    foreach (var row in worksheet.RangeUsed().Rows().Skip(1))
+                    {
+                        DataRow dataRow = dataTable.NewRow();
+                        int columnIndex = 0;
+
+                        foreach (var cell in row.Cells())
+                        {
+                            dataRow[columnIndex] = cell.GetString();
+                            columnIndex++;
                         }
 
-                        worksheet = workbook.AddWorksheet();
-                        worksheet.Cell("A1").InsertData(dataTable);
-                        string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
-                        workbook.SaveAs(savePath);
+                        dataTable.Rows.Add(dataRow);
                     }
+
+                    worksheet.Cell("A1").InsertData(dataTable);
+                    string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
+                    workbook.SaveAs(savePath);
                 }
             }
         }
