@@ -76,112 +76,56 @@ namespace LandscapingCostApp
 
                     if (!headersAdded)
                     {
-                        foreach (var cell in worksheet.Row(1).Cells())
-                        {
-                            dataTable.Columns.Add(cell.GetString(), typeof(string));
-                        }
+                        ReadHeadersFromWorksheet(dataTable, worksheet);
+
                         headersAdded = true;
                     }
 
-                    foreach (var row in worksheet.RangeUsed().Rows().Skip(1))
-                    {
-                        DataRow dataRow = dataTable.NewRow();
-                        int columnIndex = 0;
-
-                        foreach (var cell in row.Cells())
-                        {
-                            dataRow[columnIndex] = cell.GetString();
-                            columnIndex++;
-                        }
-
-                        dataTable.Rows.Add(dataRow);
-                    }
-
-                    worksheet.Cell("A1").InsertData(dataTable);
-                    string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
-                    workbook.SaveAs(savePath);
+                    ReadRowsFromWorksheet(dataTable, worksheet);
                 }
             }
+
+            SaveDataTableToExcel(dataTable);
         }
-        
-        private void SelectSheetValues()
+
+        private static void SaveDataTableToExcel(DataTable dataTable)
         {
-            var fileContent = string.Empty;
-            var filePath = string.Empty;
-
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (var outputWorkbook = new XLWorkbook())
             {
-                openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
-                openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
-                openFileDialog.FilterIndex = 2;
-                openFileDialog.RestoreDirectory = true;
+                var outputWorksheet = outputWorkbook.Worksheets.Add("Consolidated Data");
+                outputWorksheet.Cell("A1").InsertTable(dataTable);
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
+                outputWorkbook.SaveAs(savePath);
+            }
+        }
+
+        private static void ReadRowsFromWorksheet(DataTable dataTable, IXLWorksheet worksheet)
+        {
+            foreach (IXLRangeRow row in worksheet.RangeUsed().Rows().Skip(1))
+            {
+                DataRow dataRow = dataTable.NewRow();
+                int columnIndex = 0;
+
+                foreach (var cell in row.Cells())
                 {
-                    filePath = openFileDialog.FileName;
-
-                    // Read Excel File with ClosedXML
-                    using (var workbook = new XLWorkbook(filePath))
-                    {
-                        var worksheet = workbook.Worksheet(1); // Read 1st sheet
-                        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
-
-                        // Map Column names to indices
-                        Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
-
-                        string excelData = "ProjectID | Level | TaskCode | DailyLogDate | Hours\n";
-                        Dictionary<string, double> taskHours_Dict = new Dictionary<string, double>();
-
-                        foreach (var row in rows)
-                        {
-                            string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
-                            string level_Val = row.Cell(columnIndices["Level"]).GetString();
-                            string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-                            DateTime dailyLogDate = row.Cell(columnIndices["DailyLogDate"]).GetDateTime();
-                            string dailyLogDate_Val = dailyLogDate.ToString("MM/dd/yyyy");
-
-                            string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}_{dailyLogDate_Val}";
-                            double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
-
-                            // Update task Hours
-                            if (taskHours_Dict.ContainsKey(taskHours_Key))
-                            {
-                                taskHours_Dict[taskHours_Key] += tasksHours_Val;
-                            }
-                            else
-                            {
-                                taskHours_Dict[taskHours_Key] = tasksHours_Val;
-                            }
-
-                            // Read data from chosen columns
-                            excelData += $"{projectID_Val} | {level_Val} | {taskCode_Val} | {dailyLogDate_Val} | {tasksHours_Val}\n";
-                        }
-
-                        excelData += "\nTask Hours\n";
-
-                        foreach (var kvp in taskHours_Dict)
-                        {
-                            excelData += $"{kvp.Key} : {kvp.Value}\n";
-                        }
-
-                        MessageBox.Show(excelData, "Excel Data Preview", MessageBoxButtons.OK);
-                    }
+                    string cell_val = cell.GetString();
+                    dataRow[columnIndex] = cell_val;
+                    columnIndex++;
                 }
-            }
 
-            MessageBox.Show(fileContent, "File Content at path: " + filePath, MessageBoxButtons.OK);
+                dataTable.Rows.Add(dataRow);
+            }
         }
 
-        private Dictionary<string, int> getColumnIndices(IXLRow headerRow)
+        private static void ReadHeadersFromWorksheet(DataTable dataTable, IXLWorksheet worksheet)
         {
-            Dictionary<string, int> columnIndices = new Dictionary<string, int>();
-
-            foreach (var cell in headerRow.CellsUsed())
+            foreach (var header in from cell in worksheet.Row(1).Cells()
+                                   let header = cell.GetString()
+                                   select header)
             {
-                columnIndices[cell.GetString()] = cell.Address.ColumnNumber;
+                dataTable.Columns.Add(header, typeof(string));
             }
-
-            return columnIndices;
         }
 
         private void buttonViewLogs_Click(object sender, EventArgs e)
