@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             panelDropArea = new Panel();
-            listviewFiles = new ListView();
             buttonSelectFiles = new Button();
             buttonViewLogs = new Button();
+            button1 = new Button();
+            button2 = new Button();
             SuspendLayout();
             // 
             // panelDropArea
@@ -45,18 +46,9 @@
             panelDropArea.DragEnter += panelDropArea_DragEnter;
             panelDropArea.Paint += panelDropArea_Paint;
             // 
-            // listviewFiles
-            // 
-            listviewFiles.Location = new Point(53, 187);
-            listviewFiles.Name = "listviewFiles";
-            listviewFiles.Size = new Size(635, 197);
-            listviewFiles.TabIndex = 9;
-            listviewFiles.UseCompatibleStateImageBehavior = false;
-            listviewFiles.SelectedIndexChanged += listviewFiles_SelectedIndexChanged;
-            // 
             // buttonSelectFiles
             // 
-            buttonSelectFiles.Location = new Point(53, 404);
+            buttonSelectFiles.Location = new Point(53, 240);
             buttonSelectFiles.Name = "buttonSelectFiles";
             buttonSelectFiles.Size = new Size(217, 34);
             buttonSelectFiles.TabIndex = 10;
@@ -66,22 +58,41 @@
             // 
             // buttonViewLogs
             // 
-            buttonViewLogs.Location = new Point(576, 404);
+            buttonViewLogs.Location = new Point(466, 240);
             buttonViewLogs.Name = "buttonViewLogs";
-            buttonViewLogs.Size = new Size(112, 34);
+            buttonViewLogs.Size = new Size(222, 34);
             buttonViewLogs.TabIndex = 11;
-            buttonViewLogs.Text = "View Logs";
+            buttonViewLogs.Text = "View Daily Logs";
             buttonViewLogs.UseVisualStyleBackColor = true;
             buttonViewLogs.Click += buttonViewLogs_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(53, 328);
+            button1.Name = "button1";
+            button1.Size = new Size(217, 34);
+            button1.TabIndex = 12;
+            button1.Text = "Update Man Hours";
+            button1.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            button2.Location = new Point(466, 328);
+            button2.Name = "button2";
+            button2.Size = new Size(222, 34);
+            button2.TabIndex = 13;
+            button2.Text = "View Master Project Cost";
+            button2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(button2);
+            Controls.Add(button1);
             Controls.Add(buttonViewLogs);
             Controls.Add(buttonSelectFiles);
-            Controls.Add(listviewFiles);
             Controls.Add(panelDropArea);
             Name = "Form1";
             Text = "Form1";
@@ -90,8 +101,9 @@
 
         #endregion
         private Panel panelDropArea;
-        private ListView listviewFiles;
         private Button buttonSelectFiles;
         private Button buttonViewLogs;
+        private Button button1;
+        private Button button2;
     }
 }

@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using WinForms = System.Windows.Forms;
+
+// To Do
+// Fix ordering of sheets appened to output sheet
+// Button click open output sheet
+// Better UI
+// Sum up man hours functionality
 
 namespace LandscapingCostApp
 {
@@ -23,16 +32,6 @@ namespace LandscapingCostApp
             frm.Show();
         }
 
-        private void progressBar1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panelDropArea_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void panelDropArea_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -41,28 +40,12 @@ namespace LandscapingCostApp
             }
         }
 
-        private void panelDropArea_DragDrop(object sender, DragEventArgs e)
-        {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string file in files)
-            {
-                if (Path.GetExtension(file).ToLower() == ".xlsx") // Only allow Excel files
-                {
-                    listviewFiles.Items.Add(new ListViewItem(file)); // Add file to ListView
-                }
-            }
-        }
-
-        private void listviewFiles_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         record DailyLog(string ProjectID, string ProjectName, string Level, string LeadName, DateOnly DailyLogDate, string TaskCode, string Task, double Hours);
 
         private void buttonSelectFiles_Click(object sender, EventArgs e)
         {
-            string inputPath = @"C:\Users\theod\Documents\LandscapeProject\DailyLogs";
+            string inputPath = SelectExcelsFolderPath();
+
             string[] excelFiles = Directory.GetFiles(inputPath, "*.xlsx");
 
             DataTable dataTable = new DataTable();
@@ -86,6 +69,21 @@ namespace LandscapingCostApp
             }
 
             SaveDataTableToExcel(dataTable);
+        }
+
+        private static string SelectExcelsFolderPath()
+        {
+            WinForms.FolderBrowserDialog dialog = new WinForms.FolderBrowserDialog();
+            dialog.InitialDirectory = Environment.CurrentDirectory;
+            WinForms.DialogResult result = dialog.ShowDialog();
+            string inputPath = Environment.CurrentDirectory;
+
+            if (result == WinForms.DialogResult.OK)
+            {
+                inputPath = dialog.SelectedPath;
+            }
+
+            return inputPath;
         }
 
         private static void SaveDataTableToExcel(DataTable dataTable)
@@ -130,7 +128,8 @@ namespace LandscapingCostApp
 
         private void buttonViewLogs_Click(object sender, EventArgs e)
         {
-
+            string outputPath = @"C:\Users\theod\Documents\LandscapeProject\Output";
+            Process.Start("explorer.exe", outputPath);
         }
     }
 }
