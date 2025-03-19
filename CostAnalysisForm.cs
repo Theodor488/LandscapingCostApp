@@ -16,20 +16,11 @@ using WinForms = System.Windows.Forms;
 
 namespace LandscapingCostApp
 {
-    public partial class Form1 : Form
+    public partial class CostAnalysisForm : Form
     {
-        public Form1()
+        public CostAnalysisForm()
         {
             InitializeComponent();
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            //MessageBox.Show($"Hello {textBox1.Text} {textBox2.Text}");
-            //textBox3.Text = $"{textBox1.Text} {textBox2.Text}";
-            //progressBar1.Value += 10;
-            Form2 frm = new Form2();
-            frm.Show();
         }
 
         private void panelDropArea_DragEnter(object sender, DragEventArgs e)

@@ -1,6 +1,6 @@
 ﻿namespace LandscapingCostApp
 {
-    partial class Form1
+    partial class CostAnalysisForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -37,14 +37,10 @@
             // 
             // panelDropArea
             // 
-            panelDropArea.AllowDrop = true;
-            panelDropArea.Location = new Point(53, 31);
+            panelDropArea.Location = new Point(0, 0);
             panelDropArea.Name = "panelDropArea";
-            panelDropArea.Size = new Size(635, 150);
-            panelDropArea.TabIndex = 8;
-            panelDropArea.DragDrop += panelDropArea_DragDrop;
-            panelDropArea.DragEnter += panelDropArea_DragEnter;
-            panelDropArea.Paint += panelDropArea_Paint;
+            panelDropArea.Size = new Size(200, 100);
+            panelDropArea.TabIndex = 14;
             // 
             // buttonSelectFiles
             // 
@@ -74,6 +70,7 @@
             button1.TabIndex = 12;
             button1.Text = "Update Man Hours";
             button1.UseVisualStyleBackColor = true;
+            button1.Click += this.button1_Click;
             // 
             // button2
             // 
@@ -84,7 +81,7 @@
             button2.Text = "View Master Project Cost";
             button2.UseVisualStyleBackColor = true;
             // 
-            // Form1
+            // CostAnalysisForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -94,7 +91,7 @@
             Controls.Add(buttonViewLogs);
             Controls.Add(buttonSelectFiles);
             Controls.Add(panelDropArea);
-            Name = "Form1";
+            Name = "CostAnalysisForm";
             Text = "Form1";
             ResumeLayout(false);
         }
