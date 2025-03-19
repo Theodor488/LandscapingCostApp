@@ -1,4 +1,5 @@
-﻿namespace LandscapingCostApp
+﻿
+namespace LandscapingCostApp
 {
     partial class CostAnalysisForm
     {
@@ -28,19 +29,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            panelDropArea = new Panel();
             buttonSelectFiles = new Button();
             buttonViewLogs = new Button();
-            button1 = new Button();
-            button2 = new Button();
+            updateManHoursButton = new Button();
+            viewProjectCostbutton = new Button();
             SuspendLayout();
-            // 
-            // panelDropArea
-            // 
-            panelDropArea.Location = new Point(0, 0);
-            panelDropArea.Name = "panelDropArea";
-            panelDropArea.Size = new Size(200, 100);
-            panelDropArea.TabIndex = 14;
             // 
             // buttonSelectFiles
             // 
@@ -62,45 +55,44 @@
             buttonViewLogs.UseVisualStyleBackColor = true;
             buttonViewLogs.Click += buttonViewLogs_Click;
             // 
-            // button1
+            // updateManHoursButton
             // 
-            button1.Location = new Point(53, 328);
-            button1.Name = "button1";
-            button1.Size = new Size(217, 34);
-            button1.TabIndex = 12;
-            button1.Text = "Update Man Hours";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += this.button1_Click;
+            updateManHoursButton.Location = new Point(53, 328);
+            updateManHoursButton.Name = "updateManHoursButton";
+            updateManHoursButton.Size = new Size(217, 34);
+            updateManHoursButton.TabIndex = 15;
+            updateManHoursButton.Text = "Update Hours";
+            updateManHoursButton.UseVisualStyleBackColor = true;
+            updateManHoursButton.Click += updateManHoursButton_Click;
             // 
-            // button2
+            // viewProjectCostbutton
             // 
-            button2.Location = new Point(466, 328);
-            button2.Name = "button2";
-            button2.Size = new Size(222, 34);
-            button2.TabIndex = 13;
-            button2.Text = "View Master Project Cost";
-            button2.UseVisualStyleBackColor = true;
+            viewProjectCostbutton.Location = new Point(466, 328);
+            viewProjectCostbutton.Name = "viewProjectCostbutton";
+            viewProjectCostbutton.Size = new Size(222, 34);
+            viewProjectCostbutton.TabIndex = 16;
+            viewProjectCostbutton.Text = "View Project Cost";
+            viewProjectCostbutton.UseVisualStyleBackColor = true;
+            viewProjectCostbutton.Click += viewProjectCostbutton_Click;
             // 
             // CostAnalysisForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(button2);
-            Controls.Add(button1);
+            Controls.Add(viewProjectCostbutton);
+            Controls.Add(updateManHoursButton);
             Controls.Add(buttonViewLogs);
             Controls.Add(buttonSelectFiles);
-            Controls.Add(panelDropArea);
             Name = "CostAnalysisForm";
             Text = "Form1";
             ResumeLayout(false);
         }
 
-        #endregion
-        private Panel panelDropArea;
+#endregion
         private Button buttonSelectFiles;
         private Button buttonViewLogs;
-        private Button button1;
-        private Button button2;
+        private Button updateManHoursButton;
+        private Button viewProjectCostbutton;
     }
 }

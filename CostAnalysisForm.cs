@@ -122,5 +122,71 @@ namespace LandscapingCostApp
             string outputPath = @"C:\Users\theod\Documents\LandscapeProject\Output";
             Process.Start("explorer.exe", outputPath);
         }
+
+        private void updateManHoursButton_Click(object sender, EventArgs e)
+        {
+            var filePath = string.Empty;
+
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
+                openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = openFileDialog.FileName;
+
+                    // Read Excel File with ClosedXML
+                    using (var workbook = new XLWorkbook(filePath))
+                    {
+                        var worksheet = workbook.Worksheet(1); // Read 1st sheet
+                        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                        // Map Column names to indices
+                        Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
+
+                        string excelData = "ProjectID | Level | TaskCode | DailyLogDate | Hours\n";
+                        Dictionary<string, double> taskHours_Dict = new Dictionary<string, double>();
+
+                        foreach (var row in rows)
+                        {
+                            string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
+                            string level_Val = row.Cell(columnIndices["Level"]).GetString();
+                            string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
+
+                            string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
+                            double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
+
+                            // Update task Hours
+                            if (taskHours_Dict.ContainsKey(taskHours_Key))
+                            {
+                                taskHours_Dict[taskHours_Key] += tasksHours_Val;
+                            }
+                            else
+                            {
+                                taskHours_Dict[taskHours_Key] = tasksHours_Val;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void viewProjectCostbutton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private Dictionary<string, int> getColumnIndices(IXLRow headerRow)
+        {
+            Dictionary<string, int> columnIndices = new Dictionary<string, int>();
+
+            foreach (var cell in headerRow.CellsUsed())
+            {
+                columnIndices[cell.GetString()] = cell.Address.ColumnNumber;
+            }
+
+            return columnIndices;
+        }
     }
 }
