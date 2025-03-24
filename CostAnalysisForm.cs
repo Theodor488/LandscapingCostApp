@@ -125,51 +125,97 @@ namespace LandscapingCostApp
 
         private void updateManHoursButton_Click(object sender, EventArgs e)
         {
-            var filePath = string.Empty;
+            var dailyLogsFilePath = string.Empty;
+            var outputFilePath = string.Empty;
+            Dictionary<string, double> taskHours_Dict = new Dictionary<string, double>();
 
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
                 openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
 
+                // Part 1. Consolidate hours per ProjectId/Level/TaskCode (Output - Demo Table)
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    filePath = openFileDialog.FileName;
+                    dailyLogsFilePath = openFileDialog.FileName;
+                }
 
-                    // Read Excel File with ClosedXML
-                    using (var workbook = new XLWorkbook(filePath))
+                taskHours_Dict = Generate_TaskHours_Dict(dailyLogsFilePath, openFileDialog);
+            }
+
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            { 
+                // Part 2. Update hours in output table using hours : ProjectId/Level/TaskCode dict (Jobs_Latest table)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    outputFilePath = openFileDialog.FileName;
+                }
+
+                // Read Excel File with ClosedXML
+                using (var workbook_output = new XLWorkbook(outputFilePath)) // FIX: Switch to Jobs_Latest instead daily logs appended
+                {
+                    var worksheet_output = workbook_output.Worksheet(1); // Read 1st sheet
+                    var rows = worksheet_output.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                    // Map Column names to indices
+                    Dictionary<string, int> columnIndices = getColumnIndices(worksheet_output.Row(1));
+
+                    foreach (var row in rows)
                     {
-                        var worksheet = workbook.Worksheet(1); // Read 1st sheet
-                        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+                        string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
+                        string level_Val = row.Cell(columnIndices["Level"]).GetString();
+                        string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
 
-                        // Map Column names to indices
-                        Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
+                        string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
+                        //double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
 
-                        string excelData = "ProjectID | Level | TaskCode | DailyLogDate | Hours\n";
-                        Dictionary<string, double> taskHours_Dict = new Dictionary<string, double>();
-
-                        foreach (var row in rows)
+                        if (taskHours_Dict.ContainsKey(taskHours_Key))
                         {
-                            string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
-                            string level_Val = row.Cell(columnIndices["Level"]).GetString();
-                            string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-
-                            string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
-                            double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
-
-                            // Update task Hours
-                            if (taskHours_Dict.ContainsKey(taskHours_Key))
-                            {
-                                taskHours_Dict[taskHours_Key] += tasksHours_Val;
-                            }
-                            else
-                            {
-                                taskHours_Dict[taskHours_Key] = tasksHours_Val;
-                            }
+                            row.Cell(columnIndices["ManHoursActual"]).Value = taskHours_Dict[taskHours_Key];
                         }
                     }
                 }
             }
+        }
+
+        private Dictionary<string, double> Generate_TaskHours_Dict(string filePath, OpenFileDialog openFileDialog)
+        {
+            filePath = openFileDialog.FileName;
+            Dictionary<string, double> curr_taskHours_Dict = new Dictionary<string, double>();
+
+            // Read Excel File with ClosedXML
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                var worksheet = workbook.Worksheet(1); // Read 1st sheet
+                var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+                // Map Column names to indices
+                Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
+
+                string excelData = "ProjectID | Level | TaskCode | DailyLogDate | Hours\n";
+                    
+                foreach (var row in rows)
+                {
+                    string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
+                    string level_Val = row.Cell(columnIndices["Level"]).GetString();
+                    string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
+
+                    string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
+                    double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
+
+                    // Update task Hours
+                    if (curr_taskHours_Dict.ContainsKey(taskHours_Key))
+                    {
+                        curr_taskHours_Dict[taskHours_Key] += tasksHours_Val;
+                    }
+                    else
+                    {
+                        curr_taskHours_Dict[taskHours_Key] = tasksHours_Val;
+                    }
+                }
+            }
+
+            return curr_taskHours_Dict;
         }
 
         private void viewProjectCostbutton_Click(object sender, EventArgs e)
