@@ -140,11 +140,14 @@ namespace LandscapingCostApp
                     dailyLogsFilePath = openFileDialog.FileName;
                 }
 
-                taskHours_Dict = Generate_TaskHours_Dict(dailyLogsFilePath, openFileDialog);
+                taskHours_Dict = Generate_TaskHours_Dict(dailyLogsFilePath);
             }
 
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            { 
+            {
+                openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
+                openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+
                 // Part 2. Update hours in output table using hours : ProjectId/Level/TaskCode dict (Jobs_Latest table)
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -154,7 +157,7 @@ namespace LandscapingCostApp
                 // Read Excel File with ClosedXML
                 using (var workbook_output = new XLWorkbook(outputFilePath)) // FIX: Switch to Jobs_Latest instead daily logs appended
                 {
-                    var worksheet_output = workbook_output.Worksheet(1); // Read 1st sheet
+                    var worksheet_output = workbook_output.Worksheet("Sheet1"); // Read 1st sheet
                     var rows = worksheet_output.RangeUsed().RowsUsed().Skip(1); // Skip header row
 
                     // Map Column names to indices
@@ -174,13 +177,14 @@ namespace LandscapingCostApp
                             row.Cell(columnIndices["ManHoursActual"]).Value = taskHours_Dict[taskHours_Key];
                         }
                     }
+
+                    workbook_output.Save();
                 }
             }
         }
 
-        private Dictionary<string, double> Generate_TaskHours_Dict(string filePath, OpenFileDialog openFileDialog)
+        private Dictionary<string, double> Generate_TaskHours_Dict(string filePath)
         {
-            filePath = openFileDialog.FileName;
             Dictionary<string, double> curr_taskHours_Dict = new Dictionary<string, double>();
 
             // Read Excel File with ClosedXML
@@ -191,27 +195,20 @@ namespace LandscapingCostApp
 
                 // Map Column names to indices
                 Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
-
-                string excelData = "ProjectID | Level | TaskCode | DailyLogDate | Hours\n";
                     
                 foreach (var row in rows)
                 {
                     string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
                     string level_Val = row.Cell(columnIndices["Level"]).GetString();
                     string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-
                     string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
                     double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
 
                     // Update task Hours
                     if (curr_taskHours_Dict.ContainsKey(taskHours_Key))
-                    {
                         curr_taskHours_Dict[taskHours_Key] += tasksHours_Val;
-                    }
                     else
-                    {
                         curr_taskHours_Dict[taskHours_Key] = tasksHours_Val;
-                    }
                 }
             }
 
