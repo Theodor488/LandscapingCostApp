@@ -12,7 +12,6 @@ using WinForms = System.Windows.Forms;
 // Fix ordering of sheets appened to output sheet
 // Button click open output sheet
 // Better UI
-// Sum up man hours functionality
 
 namespace LandscapingCostApp
 {
@@ -23,22 +22,10 @@ namespace LandscapingCostApp
             InitializeComponent();
         }
 
-        private void panelDropArea_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effect = DragDropEffects.Copy; // Show copy cursor
-            }
-        }
-
-        record DailyLog(string ProjectID, string ProjectName, string Level, string LeadName, DateOnly DailyLogDate, string TaskCode, string Task, double Hours);
-
         private void buttonSelectFiles_Click(object sender, EventArgs e)
         {
             string inputPath = SelectExcelsFolderPath();
-
             string[] excelFiles = Directory.GetFiles(inputPath, "*.xlsx");
-
             DataTable dataTable = new DataTable();
             bool headersAdded = false;
 
@@ -51,14 +38,11 @@ namespace LandscapingCostApp
                     if (!headersAdded)
                     {
                         ReadHeadersFromWorksheet(dataTable, worksheet);
-
                         headersAdded = true;
                     }
-
                     ReadRowsFromWorksheet(dataTable, worksheet);
                 }
             }
-
             SaveDataTableToExcel(dataTable);
         }
 
@@ -83,8 +67,9 @@ namespace LandscapingCostApp
             {
                 var outputWorksheet = outputWorkbook.Worksheets.Add("Consolidated Data");
                 outputWorksheet.Cell("A1").InsertTable(dataTable);
-
-                string savePath = @"C:\Users\theod\Documents\LandscapeProject\Output\Demo-DataTable2.xlsx";
+                string newGuid = Guid.NewGuid().ToString();
+                string savePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", $"ConsolidatedDailyLogs_{newGuid}.xlsx");
+                Directory.CreateDirectory(Path.GetDirectoryName(savePath));
                 outputWorkbook.SaveAs(savePath);
             }
         }
@@ -117,9 +102,9 @@ namespace LandscapingCostApp
             }
         }
 
-        private void buttonViewLogs_Click(object sender, EventArgs e)
+        private void ButtonViewLogs_Click(object sender, EventArgs e)
         {
-            string outputPath = @"C:\Users\theod\Documents\LandscapeProject\Output";
+            string outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
             Process.Start("explorer.exe", outputPath);
         }
 
@@ -131,7 +116,7 @@ namespace LandscapingCostApp
 
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
+                openFileDialog.InitialDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
                 openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
 
                 // Part 1. Consolidate hours per ProjectId/Level/TaskCode (Output - Demo Table)
@@ -141,12 +126,6 @@ namespace LandscapingCostApp
                 }
 
                 taskHours_Dict = Generate_TaskHours_Dict(dailyLogsFilePath);
-            }
-
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.InitialDirectory = "C:\\Users\\theod\\Documents\\LandscapeProject";
-                openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
 
                 // Part 2. Update hours in output table using hours : ProjectId/Level/TaskCode dict (Jobs_Latest table)
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -155,7 +134,7 @@ namespace LandscapingCostApp
                 }
 
                 // Read Excel File with ClosedXML
-                using (var workbook_output = new XLWorkbook(outputFilePath)) // FIX: Switch to Jobs_Latest instead daily logs appended
+                using (var workbook_output = new XLWorkbook(outputFilePath))
                 {
                     var worksheet_output = workbook_output.Worksheet("Sheet1"); // Read 1st sheet
                     var rows = worksheet_output.RangeUsed().RowsUsed().Skip(1); // Skip header row
@@ -165,12 +144,7 @@ namespace LandscapingCostApp
 
                     foreach (var row in rows)
                     {
-                        string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
-                        string level_Val = row.Cell(columnIndices["Level"]).GetString();
-                        string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-
-                        string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
-                        //double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
+                        string taskHours_Key = GenerateTaskHoursKey(columnIndices, row);
 
                         if (taskHours_Dict.ContainsKey(taskHours_Key))
                         {
@@ -181,6 +155,15 @@ namespace LandscapingCostApp
                     workbook_output.Save();
                 }
             }
+        }
+
+        private static string GenerateTaskHoursKey(Dictionary<string, int> columnIndices, IXLRangeRow? row)
+        {
+            string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
+            string level_Val = row.Cell(columnIndices["Level"]).GetString();
+            string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
+            string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
+            return taskHours_Key;
         }
 
         private Dictionary<string, double> Generate_TaskHours_Dict(string filePath)
@@ -198,10 +181,13 @@ namespace LandscapingCostApp
                     
                 foreach (var row in rows)
                 {
+                    /*
                     string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
                     string level_Val = row.Cell(columnIndices["Level"]).GetString();
                     string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-                    string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";
+                    string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";*/
+                    string taskHours_Key = GenerateTaskHoursKey(columnIndices, row);
+
                     double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
 
                     // Update task Hours

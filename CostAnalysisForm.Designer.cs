@@ -53,7 +53,7 @@ namespace LandscapingCostApp
             buttonViewLogs.TabIndex = 11;
             buttonViewLogs.Text = "View Daily Logs";
             buttonViewLogs.UseVisualStyleBackColor = true;
-            buttonViewLogs.Click += buttonViewLogs_Click;
+            buttonViewLogs.Click += ButtonViewLogs_Click;
             // 
             // updateManHoursButton
             // 
