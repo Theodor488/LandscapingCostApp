@@ -181,13 +181,7 @@ namespace LandscapingCostApp
                     
                 foreach (var row in rows)
                 {
-                    /*
-                    string projectID_Val = row.Cell(columnIndices["ProjectID"]).GetString();
-                    string level_Val = row.Cell(columnIndices["Level"]).GetString();
-                    string taskCode_Val = row.Cell(columnIndices["TaskCode"]).GetString();
-                    string taskHours_Key = $"{projectID_Val}_{level_Val}_{taskCode_Val}";*/
                     string taskHours_Key = GenerateTaskHoursKey(columnIndices, row);
-
                     double tasksHours_Val = Math.Round(Convert.ToDouble(row.Cell(columnIndices["Hours"]).GetString()), 2);
 
                     // Update task Hours
