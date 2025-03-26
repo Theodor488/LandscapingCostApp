@@ -12,24 +12,33 @@ using WinForms = System.Windows.Forms;
 // Fix ordering of sheets appened to output sheet
 // Button click open output sheet
 // Better UI
+// Make this work at relative directory
+// Code cleanup + Classes
+// Unit Tests?
 
 namespace LandscapingCostApp
 {
     public partial class CostAnalysisForm : Form
     {
+        List<string> droppedDailyLogFiles = new List<string>();
+
         public CostAnalysisForm()
         {
             InitializeComponent();
+
+            panelDropArea.AllowDrop = true;
+            panelDropArea.DragEnter += panelDropArea_DragEnter;
+            panelDropArea.DragDrop += panelDropArea_DragDrop;
         }
 
-        private void buttonSelectFiles_Click(object sender, EventArgs e)
+        private void buttonCombineDailyLogs(object sender, EventArgs e)
         {
             string inputPath = SelectExcelsFolderPath();
-            string[] excelFiles = Directory.GetFiles(inputPath, "*.xlsx");
+            //string[] excelFiles = Directory.GetFiles(inputPath, "*.xlsx");
             DataTable dataTable = new DataTable();
             bool headersAdded = false;
 
-            foreach (string file in excelFiles)
+            foreach (string file in droppedDailyLogFiles)
             {
                 using (var workbook = new XLWorkbook(file))
                 {
@@ -67,8 +76,8 @@ namespace LandscapingCostApp
             {
                 var outputWorksheet = outputWorkbook.Worksheets.Add("Consolidated Data");
                 outputWorksheet.Cell("A1").InsertTable(dataTable);
-                string newGuid = Guid.NewGuid().ToString();
-                string savePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", $"ConsolidatedDailyLogs_{newGuid}.xlsx");
+                string newTimestamp = DateTime.Now.ToString("MM-dd-yyyy_HH-mm-ss");
+                string savePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output", $"ConsolidatedDailyLogs_{newTimestamp}.xlsx");
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath));
                 outputWorkbook.SaveAs(savePath);
             }
@@ -136,7 +145,7 @@ namespace LandscapingCostApp
                 // Read Excel File with ClosedXML
                 using (var workbook_output = new XLWorkbook(outputFilePath))
                 {
-                    var worksheet_output = workbook_output.Worksheet("Sheet1"); // Read 1st sheet
+                    var worksheet_output = workbook_output.Worksheet(1); // Read 1st sheet
                     var rows = worksheet_output.RangeUsed().RowsUsed().Skip(1); // Skip header row
 
                     // Map Column names to indices
@@ -178,7 +187,7 @@ namespace LandscapingCostApp
 
                 // Map Column names to indices
                 Dictionary<string, int> columnIndices = getColumnIndices(worksheet.Row(1));
-                    
+
                 foreach (var row in rows)
                 {
                     string taskHours_Key = GenerateTaskHoursKey(columnIndices, row);
@@ -195,11 +204,6 @@ namespace LandscapingCostApp
             return curr_taskHours_Dict;
         }
 
-        private void viewProjectCostbutton_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private Dictionary<string, int> getColumnIndices(IXLRow headerRow)
         {
             Dictionary<string, int> columnIndices = new Dictionary<string, int>();
@@ -210,6 +214,30 @@ namespace LandscapingCostApp
             }
 
             return columnIndices;
+        }
+
+        private void panelDropArea_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                bool allExcel = files.All(file => Path.GetExtension(file).ToLower() == ".xlsx");
+
+                if (allExcel) 
+                    e.Effect = DragDropEffects.Copy;
+                else
+                    e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void panelDropArea_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            foreach (string file in files)
+            {
+                droppedDailyLogFiles.Add(file);
+            }
         }
     }
 }

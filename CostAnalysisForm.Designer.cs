@@ -33,21 +33,22 @@ namespace LandscapingCostApp
             buttonViewLogs = new Button();
             updateManHoursButton = new Button();
             viewProjectCostbutton = new Button();
+            panelDropArea = new Panel();
             SuspendLayout();
             // 
             // buttonSelectFiles
             // 
-            buttonSelectFiles.Location = new Point(53, 240);
+            buttonSelectFiles.Location = new Point(53, 73);
             buttonSelectFiles.Name = "buttonSelectFiles";
             buttonSelectFiles.Size = new Size(217, 34);
             buttonSelectFiles.TabIndex = 10;
             buttonSelectFiles.Text = "Combine Daily Logs";
             buttonSelectFiles.UseVisualStyleBackColor = true;
-            buttonSelectFiles.Click += buttonSelectFiles_Click;
+            buttonSelectFiles.Click += buttonCombineDailyLogs;
             // 
             // buttonViewLogs
             // 
-            buttonViewLogs.Location = new Point(466, 240);
+            buttonViewLogs.Location = new Point(466, 73);
             buttonViewLogs.Name = "buttonViewLogs";
             buttonViewLogs.Size = new Size(222, 34);
             buttonViewLogs.TabIndex = 11;
@@ -57,7 +58,7 @@ namespace LandscapingCostApp
             // 
             // updateManHoursButton
             // 
-            updateManHoursButton.Location = new Point(53, 328);
+            updateManHoursButton.Location = new Point(53, 384);
             updateManHoursButton.Name = "updateManHoursButton";
             updateManHoursButton.Size = new Size(217, 34);
             updateManHoursButton.TabIndex = 15;
@@ -65,21 +66,22 @@ namespace LandscapingCostApp
             updateManHoursButton.UseVisualStyleBackColor = true;
             updateManHoursButton.Click += updateManHoursButton_Click;
             // 
-            // viewProjectCostbutton
+            // panelDropArea
             // 
-            viewProjectCostbutton.Location = new Point(466, 328);
-            viewProjectCostbutton.Name = "viewProjectCostbutton";
-            viewProjectCostbutton.Size = new Size(222, 34);
-            viewProjectCostbutton.TabIndex = 16;
-            viewProjectCostbutton.Text = "View Project Cost";
-            viewProjectCostbutton.UseVisualStyleBackColor = true;
-            viewProjectCostbutton.Click += viewProjectCostbutton_Click;
+            panelDropArea.AllowDrop = true;
+            panelDropArea.Location = new Point(53, 180);
+            panelDropArea.Name = "panelDropArea";
+            panelDropArea.Size = new Size(300, 150);
+            panelDropArea.TabIndex = 17;
+            panelDropArea.DragDrop += panelDropArea_DragDrop;
+            panelDropArea.DragEnter += panelDropArea_DragEnter;
             // 
             // CostAnalysisForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(panelDropArea);
             Controls.Add(viewProjectCostbutton);
             Controls.Add(updateManHoursButton);
             Controls.Add(buttonViewLogs);
@@ -89,10 +91,11 @@ namespace LandscapingCostApp
             ResumeLayout(false);
         }
 
-#endregion
+        #endregion
         private Button buttonSelectFiles;
         private Button buttonViewLogs;
         private Button updateManHoursButton;
         private Button viewProjectCostbutton;
+        private Panel panelDropArea;
     }
 }
