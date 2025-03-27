@@ -8,14 +8,6 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using WinForms = System.Windows.Forms;
 
-// To Do
-// Fix ordering of sheets appened to output sheet
-// Button click open output sheet
-// Better UI
-// Make this work at relative directory
-// Code cleanup + Classes
-// Unit Tests?
-
 namespace LandscapingCostApp
 {
     public partial class CostAnalysisForm : Form
@@ -29,6 +21,10 @@ namespace LandscapingCostApp
             panelDropArea.AllowDrop = true;
             panelDropArea.DragEnter += panelDropArea_DragEnter;
             panelDropArea.DragDrop += panelDropArea_DragDrop;
+
+            // Ensure child controls do not handle drag
+            label_logFilesDrop.AllowDrop = false;
+            listBox_dailyLogs.AllowDrop = false;
         }
 
         private void buttonCombineDailyLogs(object sender, EventArgs e)
@@ -45,13 +41,13 @@ namespace LandscapingCostApp
 
                     if (!headersAdded)
                     {
-
                         ExcelHelper.ReadHeadersFromWorksheet(dataTable, worksheet);
                         headersAdded = true;
                     }
                     ExcelHelper.ReadRowsFromWorksheet(dataTable, worksheet);
                 }
             }
+
             ExcelHelper.SaveDataTableToExcel(dataTable);
         }
 
@@ -84,6 +80,17 @@ namespace LandscapingCostApp
 
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
+                openFileDialog.InitialDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
+                openFileDialog.Filter = "xlsx files (*.xlsx)|*.xlsx|All files (*.*)|*.*";
+
+                MessageBox.Show("Select Consolidated Daily Logs File.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Consolidate hours per ProjectId/Level/TaskCode
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    dailyLogsFilePath = openFileDialog.FileName;
+                }
+
                 taskHours_Dict = ManHoursUpdaterService.UpdateManHours(dailyLogsFilePath, ref outputFilePath, openFileDialog);
             }
         }
@@ -108,19 +115,23 @@ namespace LandscapingCostApp
 
             foreach (string file in files)
             {
-                droppedDailyLogFiles.Add(file);
-
-                if (Path.GetExtension(file).ToLower() == ".xlsx")
+                if (!droppedDailyLogFiles.Contains(file))
                 {
-                    string fileName = Path.GetFileName(file);
-                    listBox_dailyLogs.Items.Add(fileName);
+                    droppedDailyLogFiles.Add(file);
+
+                    if (Path.GetExtension(file).ToLower() == ".xlsx")
+                    {
+                        string fileName = Path.GetFileName(file);
+                        listBox_dailyLogs.Items.Add(fileName);
+                    }
                 }
             }
         }
 
         private void viewProjectCostbutton_Click(object sender, EventArgs e)
         {
-
+            string outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
+            Process.Start("explorer.exe", outputPath);
         }
 
         private void label_logFilesDrop_Click(object sender, EventArgs e)
@@ -129,6 +140,11 @@ namespace LandscapingCostApp
         }
 
         private void panelDropArea_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void listBox_dailyLogs_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }

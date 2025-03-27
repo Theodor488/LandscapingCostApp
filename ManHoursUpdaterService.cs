@@ -13,6 +13,8 @@ namespace LandscapingCostApp
         {
             Dictionary<string, double> taskHours_Dict = DailyLogService.Generate_TaskHours_Dict(dailyLogsFilePath);
 
+            MessageBox.Show("Select Project Cost Sheet to Update Hours.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             // Update hours in output table using hours : ProjectId/Level/TaskCode dict (Jobs_Latest table)
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
