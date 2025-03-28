@@ -29,7 +29,9 @@ namespace LandscapingCostApp
 
         private void buttonCombineDailyLogs(object sender, EventArgs e)
         {
+            MessageBox.Show("Select Output Location for Consolidated Log Files.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             string inputPath = SelectExcelsFolderPath();
+
             DataTable dataTable = new DataTable();
             bool headersAdded = false;
 
